@@ -33,6 +33,20 @@ class MapsViewController: UIViewController {
         return gesture
     }()
 
+    private lazy var deleteAllPinsButton: UIButton = {
+        let button = UIButton()
+        button.translatesAutoresizingMaskIntoConstraints = false
+        button.setImage(UIImage(systemName: "trash.circle",
+                                withConfiguration: UIImage.SymbolConfiguration(pointSize: 40,
+                                                                               weight: .regular,
+                                                                               scale: .large)),
+                        for: .normal)
+        button.tintColor = .systemRed
+        button.addTarget(self, action: #selector(deleteAllPins), for: .touchUpInside)
+
+        return button
+    }()
+
     override func viewDidLoad() {
         super.viewDidLoad()
 
@@ -43,18 +57,34 @@ class MapsViewController: UIViewController {
     private func viewInitialSettings() {
         getPermissionStatus()
         setupSubviews()
+        showInfo()
     }
 
     private func setupSubviews() {
         mapView.addGestureRecognizer(longPressGR)
         view.addSubview(mapView)
+        view.addSubview(deleteAllPinsButton)
 
         NSLayoutConstraint.activate([
             mapView.topAnchor.constraint(equalTo: view.topAnchor),
             mapView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
             mapView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
             mapView.bottomAnchor.constraint(equalTo: view.bottomAnchor),
+
+            deleteAllPinsButton.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
+            deleteAllPinsButton.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+            deleteAllPinsButton.widthAnchor.constraint(equalToConstant: 60),
+            deleteAllPinsButton.heightAnchor.constraint(equalTo: deleteAllPinsButton.widthAnchor),
         ])
+    }
+
+    private func showInfo() {
+        let message: String = "To create a pin - use long gesture\nTo create route - select pin\nTo trash all pins - tap red trash button"
+        let alertController = UIAlertController(title: "F.A.Q.", message: message, preferredStyle: .alert)
+        let confirm = UIAlertAction(title: "Confirm", style: .default)
+
+        alertController.addAction(confirm)
+        present(alertController, animated: true)
     }
 
     private func getPermissionStatus() {
@@ -114,7 +144,7 @@ class MapsViewController: UIViewController {
             direction.calculate { response, error in
                 if error == nil {
                     guard let route = response?.routes.first else { return }
-                    let routeRegion = MKCoordinateRegion(route.polyline.boundingMapRect.insetBy(dx: 100, dy: 100))
+                    let routeRegion = MKCoordinateRegion(route.polyline.boundingMapRect.insetBy(dx: 300, dy: 300))
                     DispatchQueue.main.async { [weak self] in
                         self?.mapView.addOverlay(route.polyline, level: .aboveRoads)
                         self?.mapView.setRegion(routeRegion, animated: true)
@@ -136,6 +166,10 @@ class MapsViewController: UIViewController {
         }
     }
 
+    @objc private func deleteAllPins() {
+        mapView.removeOverlays(mapView.overlays)
+        mapView.removeAnnotations(mapView.annotations)
+    }
 
 
 }

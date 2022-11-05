@@ -20,8 +20,10 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
 
         let window: UIWindow = UIWindow(windowScene: windowScene)
         let mapsVC: UIViewController = MapsViewController()
+        let mapsNC: UINavigationController = UINavigationController(rootViewController: mapsVC)
+        mapsNC.navigationBar.isHidden = true
 
-        window.rootViewController = mapsVC
+        window.rootViewController = mapsNC
         window.makeKeyAndVisible()
 
         self.window = window
